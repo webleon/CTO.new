@@ -6,12 +6,21 @@ const { buildViewModels } = require('./transform');
 dotenv.config();
 
 const PORT = process.env.PORT || 3000;
-const NPM_BASE_URL = process.env.NPM_BASE_URL;
+const NPM_HOST = process.env.NPM_HOST;
+const NPM_PORT = process.env.NPM_PORT;
+let NPM_BASE_URL = process.env.NPM_BASE_URL;
 const NPM_EMAIL = process.env.NPM_EMAIL;
 const NPM_PASSWORD = process.env.NPM_PASSWORD;
 const INCLUDE_REDIRECTS = /^true$/i.test(process.env.INCLUDE_REDIRECTS || 'false');
 const INCLUDE_STREAMS = /^true$/i.test(process.env.INCLUDE_STREAMS || 'false');
 const REFRESH_INTERVAL_SECONDS = parseInt(process.env.REFRESH_INTERVAL_SECONDS || '60', 10);
+
+// Allow deriving NPM_BASE_URL from NPM_HOST/NPM_PORT when not explicitly provided
+if (!NPM_BASE_URL && (NPM_HOST || NPM_PORT)) {
+  const host = NPM_HOST || 'localhost';
+  const port = NPM_PORT ? `:${NPM_PORT}` : '';
+  NPM_BASE_URL = `http://${host}${port}`;
+}
 
 if (!NPM_BASE_URL || !NPM_EMAIL || !NPM_PASSWORD) {
   // We will not throw here to allow the page to show a helpful error message
@@ -19,6 +28,28 @@ if (!NPM_BASE_URL || !NPM_EMAIL || !NPM_PASSWORD) {
 }
 
 const app = express();
+
+// Optional Basic Auth protection
+const BASIC_AUTH_USER = process.env.BASIC_AUTH_USER;
+const BASIC_AUTH_PASS = process.env.BASIC_AUTH_PASS;
+if (BASIC_AUTH_USER && BASIC_AUTH_PASS) {
+  app.use((req, res, next) => {
+    const header = req.headers['authorization'] || '';
+    if (!header.startsWith('Basic ')) {
+      res.set('WWW-Authenticate', 'Basic realm="Restricted"');
+      return res.status(401).send('Authentication required');
+    }
+    const credentials = Buffer.from(header.slice(6), 'base64').toString();
+    const sepIndex = credentials.indexOf(':');
+    const user = sepIndex >= 0 ? credentials.slice(0, sepIndex) : credentials;
+    const pass = sepIndex >= 0 ? credentials.slice(sepIndex + 1) : '';
+    if (user === BASIC_AUTH_USER && pass === BASIC_AUTH_PASS) {
+      return next();
+    }
+    res.set('WWW-Authenticate', 'Basic realm="Restricted"');
+    return res.status(401).send('Unauthorized');
+  });
+}
 
 const state = {
   data: {
