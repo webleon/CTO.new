@@ -75,3 +75,45 @@ The tests cover the transformation from NPM API objects to the UI view model.
 ## Security
 - Provide a dedicated low-privileged NPM account if possible.
 - Do not expose this portal publicly unless protected by auth.
+
+## Docker images (GHCR + optional Docker Hub)
+A GitHub Actions workflow builds a multi-arch Docker image (linux/amd64 and linux/arm64) and publishes it to:
+- GHCR: ghcr.io/<owner>/<repo>
+- Optionally Docker Hub (when DOCKERHUB_USERNAME/DOCKERHUB_TOKEN secrets are configured): docker.io/<user>/<repo>
+
+Tagging strategy:
+- On push to main: latest, sha-<short>
+- On tags vX.Y.Z: vX.Y.Z, X.Y, X, latest
+
+Example pulls:
+```bash
+# GHCR
+docker pull ghcr.io/<owner>/<repo>:latest
+# Optional Docker Hub mirror
+docker pull docker.io/<user>/<repo>:latest
+```
+
+### Pulling from GHCR on Synology Container Manager (DSM 7.x)
+Public images:
+1. Open Synology Container Manager.
+2. Go to Image > Add > By URL (or From URL).
+3. Enter the image: ghcr.io/<owner>/<repo>:<tag> (e.g., :latest).
+4. Pull the image and run a container as needed.
+
+Private images:
+1. In GitHub, create a Personal Access Token (classic) with at least the read:packages scope (repo may be needed if the package is linked to a private repo).
+2. In Synology: Container Manager > Settings > Registries (or Registry Credentials) > Add.
+3. Server: ghcr.io; enable authentication and provide:
+   - Username: your GitHub username
+   - Password: the PAT created in step 1
+4. Save. Then go to Image > Add > By URL and enter ghcr.io/<owner>/<repo>:<tag>. If prompted, select the saved registry credential.
+
+CLI alternative (via SSH):
+```bash
+docker login ghcr.io -u <github-username> --password-stdin <<<'<your-ghcr-pat>'
+docker pull ghcr.io/<owner>/<repo>:<tag>
+```
+
+Notes:
+- To allow unauthenticated pulls, set the GHCR package visibility to Public in GitHub.
+- Images are built for both amd64 and arm64 and run on Synology devices with x86_64 or ARM processors.

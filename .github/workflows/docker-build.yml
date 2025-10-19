@@ -1,0 +1,110 @@
+name: Docker Build and Publish
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    name: Build and push multi-arch image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check Docker Hub credentials
+        id: dockerhub
+        shell: bash
+        run: |
+          echo "enabled=false" >> "$GITHUB_OUTPUT"
+          if [[ -n "${{ secrets.DOCKERHUB_USERNAME }}" && -n "${{ secrets.DOCKERHUB_TOKEN }}" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            echo "username=${{ secrets.DOCKERHUB_USERNAME }}" >> "$GITHUB_OUTPUT"
+            echo "image=docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Log in to Docker Hub (optional)
+        if: steps.dockerhub.outputs.enabled == 'true'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ steps.dockerhub.outputs.username }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Docker metadata (GHCR)
+        id: meta_ghcr
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}
+          flavor: |
+            latest=false
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable={{is_tag}}
+            type=sha,format=short,prefix=sha-,enable={{is_default_branch}}
+            type=semver,pattern={{version}},prefix=v,enable={{is_tag}}
+            type=semver,pattern={{major}}.{{minor}},enable={{is_tag}}
+            type=semver,pattern={{major}},enable={{is_tag}}
+
+      - name: Docker metadata (Docker Hub)
+        if: steps.dockerhub.outputs.enabled == 'true'
+        id: meta_dh
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ steps.dockerhub.outputs.image }}
+          flavor: |
+            latest=false
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable={{is_tag}}
+            type=sha,format=short,prefix=sha-,enable={{is_default_branch}}
+            type=semver,pattern={{version}},prefix=v,enable={{is_tag}}
+            type=semver,pattern={{major}}.{{minor}},enable={{is_tag}}
+            type=semver,pattern={{major}},enable={{is_tag}}
+
+      - name: Combine tags (GHCR + optional Docker Hub)
+        id: meta_combined
+        shell: bash
+        run: |
+          {
+            echo 'tags<<EOF'
+            echo "${{ steps.meta_ghcr.outputs.tags }}"
+            if [ "${{ steps.dockerhub.outputs.enabled }}" = "true" ]; then
+              echo "${{ steps.meta_dh.outputs.tags }}"
+            fi
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta_combined.outputs.tags }}
+          labels: ${{ steps.meta_ghcr.outputs.labels }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}:buildcache,mode=max
