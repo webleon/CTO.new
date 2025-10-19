@@ -4,13 +4,13 @@
 
 一个小型的 Express Web 服务，登录到 Nginx Proxy Manager（NPM）后台 API，渲染一个包含可点击链接的主机目录页面。
 
-可选徽章（首次发布后更新为真实地址）:
+徽章：
 
-[![版本](https://img.shields.io/github/v/tag/<owner>/<repo>?label=version)](https://github.com/<owner>/<repo>/tags)
-[![GHCR 镜像](https://img.shields.io/badge/GHCR-ghcr.io%2F%3Cowner%3E%2F%3Crepo%3E-555?logo=github)](https://ghcr.io/<owner>/<repo>)
+[![版本](https://img.shields.io/github/v/tag/webleon/cto-new?label=version)](https://github.com/webleon/cto-new/tags)
+[![GHCR 镜像](https://img.shields.io/badge/GHCR-ghcr.io%2Fwebleon%2Fcto-new-555?logo=github)](https://ghcr.io/webleon/cto-new)
 [![Docker Pulls](https://img.shields.io/docker/pulls/<user>/<repo>?logo=docker&label=Docker%20Hub%20pulls)](https://hub.docker.com/r/<user>/<repo>)
 
-注意：首次通过 GitHub Actions 发布镜像后，我们会将本文档中的 GHCR 路径与当前标签更新为具体值。
+注意：GHCR 镜像发布于 ghcr.io/webleon/cto-new。
 
 ## 概述
 该服务会登录 NPM 管理端 API，展示一个只读的、简洁的门户页面，列出你在 NPM 中配置的条目。它可作为自建服务的一站式入口页。
@@ -64,13 +64,12 @@ cp .env.example .env
   ```
 
 ## GHCR 镜像与标签
-以下为占位符，首次发布后替换为真实值：
 
 ```bash
-# 占位镜像引用
-export IMAGE_GHCR=ghcr.io/<owner>/<repo>
+# GHCR 镜像引用
+export IMAGE_GHCR=ghcr.io/webleon/cto-new
 
-# 使用占位符的拉取示例
+# 拉取示例
 # latest 标签
 docker pull ${IMAGE_GHCR}:latest
 # 指定版本标签
@@ -79,7 +78,7 @@ docker pull ${IMAGE_GHCR}:vX.Y.Z
 
 公开拉取：
 ```bash
-docker pull ghcr.io/<owner>/<repo>:latest
+docker pull ghcr.io/webleon/cto-new:latest
 ```
 
 私有拉取：
@@ -93,7 +92,7 @@ docker pull ghcr.io/<owner>/<repo>:latest
 ### 群晖 DSM（Container Manager）— 从 GHCR 拉取
 - 公共镜像（无需认证）：
   1. 打开 Container Manager > 镜像（Image）> 添加 > 通过 URL（By URL）。
-  2. 输入镜像：ghcr.io/<owner>/<repo>:<tag>（例如 :latest）。
+  2. 输入镜像：ghcr.io/webleon/cto-new:<tag>（例如 :latest）。
   3. 拉取镜像后按需运行容器。
 
 - 私有镜像（需凭据）：
@@ -102,7 +101,7 @@ docker pull ghcr.io/<owner>/<repo>:latest
   3. 服务器：ghcr.io；启用认证并填写：
      - 用户名：你的 GitHub 用户名
      - 密码：上一步创建的 PAT
-  4. 保存后，转到 Image > Add > By URL，输入 ghcr.io/<owner>/<repo>:<tag>；如有提示，选择刚保存的注册表凭据。
+  4. 保存后，转到 Image > Add > By URL，输入 ghcr.io/webleon/cto-new:<tag>；如有提示，选择刚保存的注册表凭据。
 
 - 通过 SSH 的 CLI 方式：
   ```bash
@@ -131,7 +130,7 @@ docker pull ghcr.io/<owner>/<repo>:latest
 
 - 使用 SSH 的 CLI 方式：
   ```bash
-  export IMAGE_GHCR=ghcr.io/<owner>/<repo>
+  export IMAGE_GHCR=ghcr.io/webleon/cto-new
   docker run -d \
     --name npm-proxy-portal \
     -p 5300:3000 \
@@ -168,7 +167,7 @@ docker pull ghcr.io/<owner>/<repo>:latest
   - 若需要显示重定向/流，请将 INCLUDE_REDIRECTS/INCLUDE_STREAMS 设为 true。
 - GHCR 拉取错误：
   - 私有镜像：确认 PAT 具备 read:packages 权限，且已登录 ghcr.io。
-  - 公共镜像：确保 GHCR 包可见性设置为 Public。
+  - 公共拉取：确保 GHCR 包可见性设置为 Public。
 - 架构不匹配：
   - 镜像支持 linux/amd64 与 linux/arm64。确认群晖设备处理器架构与之匹配。
 - 基本认证反复弹窗：
