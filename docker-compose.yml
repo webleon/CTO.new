@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  portal:
+    build: .
+    container_name: npm-proxy-portal
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
