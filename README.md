@@ -4,13 +4,13 @@ English | [简体中文](./README.zh-CN.md)
 
 A small Express web service that authenticates to Nginx Proxy Manager (NPM) and renders a simple directory of configured hosts with clickable links.
 
-Optional badges (to be updated after first publish):
+Badges:
 
-[![Version](https://img.shields.io/github/v/tag/<owner>/<repo>?label=version)](https://github.com/<owner>/<repo>/tags)
-[![GHCR Image](https://img.shields.io/badge/GHCR-ghcr.io%2F%3Cowner%3E%2F%3Crepo%3E-555?logo=github)](https://ghcr.io/<owner>/<repo>)
+[![Version](https://img.shields.io/github/v/tag/webleon/cto-new?label=version)](https://github.com/webleon/cto-new/tags)
+[![GHCR Image](https://img.shields.io/badge/GHCR-ghcr.io%2Fwebleon%2Fcto-new-555?logo=github)](https://ghcr.io/webleon/cto-new)
 [![Docker Pulls](https://img.shields.io/docker/pulls/<user>/<repo>?logo=docker&label=Docker%20Hub%20pulls)](https://hub.docker.com/r/<user>/<repo>)
 
-Note: After the first GitHub Actions publish, we will update this README with the concrete GHCR image path and current tag.
+Note: The GHCR image is published at ghcr.io/webleon/cto-new.
 
 ## Overview
 This service logs into your Nginx Proxy Manager admin API and shows a compact, read-only portal of your configured items. It’s useful as a quick landing page for your self-hosted apps and services.
@@ -64,13 +64,12 @@ cp .env.example .env
   ```
 
 ## GHCR image and tags
-Placeholders to be replaced after first publish:
 
 ```bash
-# Placeholder image reference
-export IMAGE_GHCR=ghcr.io/<owner>/<repo>
+# GHCR image reference
+export IMAGE_GHCR=ghcr.io/webleon/cto-new
 
-# Example pulls using placeholders
+# Example pulls
 # latest tag
 docker pull ${IMAGE_GHCR}:latest
 # specific release tag
@@ -79,7 +78,7 @@ docker pull ${IMAGE_GHCR}:vX.Y.Z
 
 Public pull:
 ```bash
-docker pull ghcr.io/<owner>/<repo>:latest
+docker pull ghcr.io/webleon/cto-new:latest
 ```
 
 Private pull:
@@ -93,7 +92,7 @@ Private pull:
 ### Synology DSM (Container Manager) – pulling from GHCR
 - Public images (no auth):
   1. Open Container Manager > Image > Add > By URL.
-  2. Enter the image: ghcr.io/<owner>/<repo>:<tag> (e.g., :latest).
+  2. Enter the image: ghcr.io/webleon/cto-new:<tag> (e.g., :latest).
   3. Pull the image and run a container as needed.
 
 - Private images (with credentials):
@@ -102,7 +101,7 @@ Private pull:
   3. Server: ghcr.io; enable authentication and provide:
      - Username: your GitHub username
      - Password: the PAT created in step 1
-  4. Save. Then go to Image > Add > By URL and enter ghcr.io/<owner>/<repo>:<tag>. If prompted, select the saved registry credential.
+  4. Save. Then go to Image > Add > By URL and enter ghcr.io/webleon/cto-new:<tag>. If prompted, select the saved registry credential.
 
 - CLI alternative (via SSH):
   ```bash
@@ -131,7 +130,7 @@ Private pull:
 
 - Using CLI on Synology (via SSH):
   ```bash
-  export IMAGE_GHCR=ghcr.io/<owner>/<repo>
+  export IMAGE_GHCR=ghcr.io/webleon/cto-new
   docker run -d \
     --name npm-proxy-portal \
     -p 5300:3000 \
