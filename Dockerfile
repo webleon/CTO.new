@@ -6,7 +6,8 @@ WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+# Use npm install instead of npm ci since no lockfile is provided
+RUN npm install --omit=dev && npm cache clean --force
 
 # Bundle app source
 COPY src ./src
