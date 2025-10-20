@@ -1,7 +1,7 @@
 {
   "name": "npm-proxy-portal",
-  "version": "1.0.0",
-  "description": "Simple portal listing Nginx Proxy Manager reverse proxies",
+  "version": "1.1.0",
+  "description": "SQLite-driven portal for Nginx Proxy Manager served via Express",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
@@ -11,14 +11,17 @@
   "keywords": [
     "nginx-proxy-manager",
     "portal",
-    "express"
+    "express",
+    "sqlite"
   ],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "axios": "^1.7.7",
     "dotenv": "^16.4.5",
     "express": "^4.19.2"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^9.6.0"
   },
   "devDependencies": {
     "jest": "^29.7.0"
