@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const NpmClient = require('./npmClient');
 const { buildViewModels } = require('./transform');
+const { loadTitlesStore, getTitleOverride, getSnapshotVersion } = require('./titlesStore');
 
 dotenv.config();
 
@@ -28,6 +29,11 @@ if (!NPM_BASE_URL || !NPM_EMAIL || !NPM_PASSWORD) {
 }
 
 const app = express();
+
+// Load titles overrides at startup and keep cached in memory
+loadTitlesStore().catch((err) => {
+  console.warn('Failed to load TitlesStore:', err && err.message ? err.message : String(err));
+});
 
 // Optional Basic Auth protection
 const BASIC_AUTH_USER = process.env.BASIC_AUTH_USER;
@@ -177,7 +183,14 @@ function layoutPage(content, { title = 'NPM Proxy Portal' } = {}) {
 }
 
 function renderPage() {
-  const vm = buildViewModels(state.data, INCLUDE_REDIRECTS, INCLUDE_STREAMS, getAdminEditUrlFor);
+  const vm = buildViewModels(
+    state.data,
+    INCLUDE_REDIRECTS,
+    INCLUDE_STREAMS,
+    getAdminEditUrlFor,
+    getTitleOverride,
+    getSnapshotVersion,
+  );
   const sections = [];
 
   const proxyCards = vm.proxies.map(renderHostCard).join('\n');
